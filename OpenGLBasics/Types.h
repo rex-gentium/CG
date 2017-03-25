@@ -1,15 +1,15 @@
 #pragma once
 
-struct ScreenPoint {
-	ScreenPoint() {};
-	ScreenPoint(unsigned horizontal, unsigned vertical): 
+struct ScreenCoord {
+	ScreenCoord() {};
+	ScreenCoord(int horizontal, int vertical):
 		x(horizontal), y(vertical) {}
-	unsigned x, y;
+	int x, y;
 };
 
-struct RelativePoint {
-	RelativePoint() {};
-	RelativePoint(float horizontal, float vertical) :
+struct NormalizedCoord {
+	NormalizedCoord() {};
+	NormalizedCoord(float horizontal, float vertical) :
 		x(horizontal), y(vertical) {}
 	float x, y;
 };

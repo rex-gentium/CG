@@ -3,6 +3,7 @@
 #include <GLFW\glfw3.h>
 #include <string>
 #include "Types.h"
+#include <glm/glm.hpp>
 
 class Window
 {
@@ -19,12 +20,12 @@ public:
 	float getScreenWidthChange() const { return screenWidth / (float) prevWidth; }
 	float getScreenHeightChange() const { return screenHeight / (float)prevHeight; }
 
-	GLfloat wndXToRelative(unsigned horizontalCoordinate) const;
-	GLfloat wndYToRelative(unsigned verticalCoordinate) const;
-	unsigned relativeXToWndCoordinate(GLfloat horizontalCoordinate) const;
-	unsigned relativeYToWndCoordinate(GLfloat verticalCoordinate) const;
-	ScreenPoint relativeToScreen(RelativePoint coordinate) const;
-	RelativePoint screenToRelative(ScreenPoint coordinate) const;
+	GLfloat screenXToNormalizedX(int horizontalCoordinate) const;
+	GLfloat screenYToNormalizedY(int verticalCoordinate) const;
+	int normalizedXToScreenX(GLfloat horizontalCoordinate) const;
+	int normalizedYToScreenY(GLfloat verticalCoordinate) const;
+	ScreenCoord normalizedToScreen(NormalizedCoord coordinate) const;
+	NormalizedCoord screenToNormalized(ScreenCoord coordinate) const;
 
 	bool shouldClose() const;
 

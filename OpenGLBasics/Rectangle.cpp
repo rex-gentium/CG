@@ -1,32 +1,14 @@
-#include "Rectangle.h"
+﻿#include "Rectangle.h"
 #include <glm\gtx\rotate_vector.hpp>
+#include <glm/gtc/matrix_transform.hpp> 
+#include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_transform_2d.hpp>
 
-
-Rectangle::Rectangle(Window * window, ScreenPoint coordinate, int width, int height) : DrawObject2D(window)
+Rectangle::Rectangle(Window * window, ScreenCoord coordinate, int width, int height) : DrawObject2D(window)
 {
-	point = coordinate;
-
+	position = coordinate;
 	this->width = width;
 	this->height = height;
-	pointRelative = window->screenToRelative(point);
-	widthRelative = width / (float)window->getScreenWidth();
-	heightRelative = height / (float)window->getScreenHeight();
-	vertexCount = 4;
-	vertices = new glm::vec2[vertexCount];
-	updateVertices();
-}
-
-Rectangle::Rectangle(Window * window, RelativePoint coordinate, float width, float height): DrawObject2D(window)
-{
-	point = window->relativeToScreen(coordinate);
-	pointRelative = coordinate;
-	this->width = static_cast<int>(width * window->getScreenWidth());
-	this->height = static_cast<int>(height * window->getScreenHeight());
-	this->widthRelative = width;
-	this->heightRelative = height;
-	vertexCount = 4;
-	vertices = new glm::vec2[vertexCount];
-	updateVertices();
 }
 
 Rectangle::~Rectangle()
@@ -35,55 +17,44 @@ Rectangle::~Rectangle()
 
 void Rectangle::draw()
 {
-	if (lockPosition)
-		pointRelative = window->screenToRelative(point);
-	if (lockProportion)
-		heightRelative = window->getScreenRatio() * widthRelative;
-	if (lockSize) {
-		widthRelative = width / (float)window->getScreenWidth();
-		heightRelative = height / (float)window->getScreenHeight();
-	}
-	updateVertices();
+	auto vertices = calculateVertices();
 	// An array of 6 vectors which represents 2 triangles
-	GLfloat gVertexBufferData[] = {
-		vertices[0].x, vertices[0].y, 0.0f,
-		vertices[1].x, vertices[1].y, 0.0f,
-		vertices[2].x, vertices[2].y, 0.0f,
-		vertices[0].x, vertices[0].y, 0.0f,
-		vertices[2].x, vertices[2].y, 0.0f,
-		vertices[3].x, vertices[3].y, 0.0f,
-	};
-	glBufferData(GL_ARRAY_BUFFER, sizeof(gVertexBufferData), gVertexBufferData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(
-		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-		3,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		0,                  // stride
-		(void*)0            // array buffer offset
-	);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 0, (void*)0);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glDisableVertexAttribArray(0);
 }
 
-void Rectangle::updateVertices()
+std::vector<GLfloat> Rectangle::calculateVertices()
 {
-	vertices[0] = { pointRelative.x, pointRelative.y };
-	vertices[1] = { pointRelative.x + widthRelative, pointRelative.y };
-	vertices[2] = { pointRelative.x + widthRelative, pointRelative.y - heightRelative };
-	vertices[3] = { pointRelative.x, pointRelative.y - heightRelative };
-	// translation
-
-	// rotation
-	glm::vec3 center((vertices[0].x + vertices[2].x) / 2.0f, (vertices[0].y + vertices[2].y) / 2.0f, 0.0f);
-	for (int i = 0; i < vertexCount; ++i) {
-		glm::mat3x2 translationMatrix(0.0f);
-		translationMatrix[0][0] = 1.0f;
-		translationMatrix[1][1] = 1.0f;
-		translationMatrix[2][0] = -center.x;
-		translationMatrix[2][1] = -center.y;
-		vertices[i] = translationMatrix * glm::vec3(vertices[i].x, vertices[i].y, 1.0f);
-		vertices[i] = glm::rotate(vertices[i], rotation);
+	// сначала считаются экранная позиция фигуры
+	glm::vec2 verticesScr[4] = {
+		{ position.x, position.y },
+		{ position.x + width, position.y },
+		{ position.x + width, position.y + height },
+		{ position.x, position.y + height }
+	};
+	glm::vec2 center((verticesScr[0].x + verticesScr[1].x) / 2.0f, (verticesScr[0].y + verticesScr[2].y) / 2.0f);
+	for (int i = 0; i < 4; ++i) {
+		verticesScr[i] = glm::translate(glm::mat3(), -center) * glm::vec3(verticesScr[i].x, verticesScr[i].y, 1.0f);
+		verticesScr[i] = glm::rotate(glm::mat3(), rotation) * glm::vec3(verticesScr[i].x, verticesScr[i].y, 1.0f);
+		verticesScr[i] = glm::translate(glm::mat3(), center) * glm::vec3(verticesScr[i].x, verticesScr[i].y, 1.0f);
 	}
+	glm::vec2 verticesNorm[4] = {
+		glm::vec2(window->screenXToNormalizedX(verticesScr[0].x), window->screenYToNormalizedY(verticesScr[0].y)),
+		glm::vec2(window->screenXToNormalizedX(verticesScr[1].x), window->screenYToNormalizedY(verticesScr[1].y)),
+		glm::vec2(window->screenXToNormalizedX(verticesScr[2].x), window->screenYToNormalizedY(verticesScr[2].y)),
+		glm::vec2(window->screenXToNormalizedX(verticesScr[3].x), window->screenYToNormalizedY(verticesScr[3].y))
+	};
+	// в результирующий массив проталкивается 6 точек (2 треугольника) по 3 координаты
+	std::vector<GLfloat> result = {
+		verticesNorm[0].x, verticesNorm[0].y, 0.0f,
+		verticesNorm[1].x, verticesNorm[1].y, 0.0f,
+		verticesNorm[2].x, verticesNorm[2].y, 0.0f,
+		verticesNorm[0].x, verticesNorm[0].y, 0.0f,
+		verticesNorm[2].x, verticesNorm[2].y, 0.0f,
+		verticesNorm[3].x, verticesNorm[3].y, 0.0f
+	};
+	return result;
 }

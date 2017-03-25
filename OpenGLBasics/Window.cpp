@@ -30,6 +30,11 @@ int Window::create(std::string windowName, int screenWidth, int screenHeight)
 	
 	glfwMakeContextCurrent(glfwWindow);
 	
+	glViewport(0, 0, screenWidth, screenHeight);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f);
+
 	return 0;
 }
 
@@ -40,34 +45,34 @@ void Window::swapBuffers()
 	//updateScreenResolution();
 }
 
-GLfloat Window::wndXToRelative(unsigned horizontalCoordinate) const
+GLfloat Window::screenXToNormalizedX(int horizontalCoordinate) const
 {
 	return GLfloat(2.0f * horizontalCoordinate / screenWidth - 1.0f);
 }
 
-GLfloat Window::wndYToRelative(unsigned verticalCoordinate) const
+GLfloat Window::screenYToNormalizedY(int verticalCoordinate) const
 {
 	return GLfloat(1.0f - 2.0f * verticalCoordinate / screenHeight);
 }
 
-unsigned Window::relativeXToWndCoordinate(GLfloat horizontalCoordinate) const
+int Window::normalizedXToScreenX(GLfloat horizontalCoordinate) const
 {
 	return static_cast<unsigned>((horizontalCoordinate + 1.0f) * screenWidth / 2.0f);
 }
 
-unsigned Window::relativeYToWndCoordinate(GLfloat verticalCoordinate) const
+int Window::normalizedYToScreenY(GLfloat verticalCoordinate) const
 {
 	return static_cast<unsigned>((1.0f - verticalCoordinate) * screenHeight / 2.0f);
 }
 
-ScreenPoint Window::relativeToScreen(RelativePoint coordinate) const
+ScreenCoord Window::normalizedToScreen(NormalizedCoord coordinate) const
 {
-	return ScreenPoint({ relativeXToWndCoordinate(coordinate.x), relativeYToWndCoordinate(coordinate.y) });
+	return ScreenCoord({ normalizedXToScreenX(coordinate.x), normalizedYToScreenY(coordinate.y) });
 }
 
-RelativePoint Window::screenToRelative(ScreenPoint coordinate) const
+NormalizedCoord Window::screenToNormalized(ScreenCoord coordinate) const
 {
-	return RelativePoint({ wndXToRelative(coordinate.x), wndYToRelative(coordinate.y) });
+	return NormalizedCoord({ screenXToNormalizedX(coordinate.x), screenYToNormalizedY(coordinate.y) });
 }
 
 bool Window::shouldClose() const
@@ -92,7 +97,11 @@ void Window::updateScreenResolution()
 	prevWidth = screenWidth;
 	prevHeight = screenHeight;
 	glfwGetFramebufferSize(glfwWindow, &screenWidth, &screenHeight);
-	if (prevWidth != screenWidth || prevHeight != screenHeight)
+	if (prevWidth != screenWidth || prevHeight != screenHeight) {
 		glViewport(0, 0, screenWidth, screenHeight);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f);
+	}
 }
 
