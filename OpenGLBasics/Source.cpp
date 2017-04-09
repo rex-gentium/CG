@@ -28,7 +28,7 @@ int main() {
 	// init Window Object and input handlers
 	initGLFW();
 	Window window;
-	bool isWindowCreated = window.create("Computer Graphics", 800, 600) == 0;
+	bool isWindowCreated = window.create("Computer Graphics", 800, 600) == 0;;
 	if (!isWindowCreated) return -1;
 	initGLEW();
 	initInputListeners(window.get());
