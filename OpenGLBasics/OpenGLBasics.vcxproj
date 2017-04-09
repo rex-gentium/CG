@@ -93,7 +93,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)\opengl_binaries\glm;$(SolutionDir)\opengl_binaries\glew-2.0.0\include;$(SolutionDir)\opengl_binaries\glfw-3.2.1.bin.WIN32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -127,7 +127,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)\opengl_binaries\glm;$(SolutionDir)\opengl_binaries\glew-2.0.0\include;$(SolutionDir)\opengl_binaries\glfw-3.2.1.bin.WIN32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -161,27 +161,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DrawObject2D.cpp" />
-    <ClCompile Include="Point2D.cpp" />
-    <ClCompile Include="Rectangle.cpp" />
+    <ClCompile Include="common\shader.cpp" />
     <ClCompile Include="Source.cpp" />
-    <ClCompile Include="Square.cpp" />
     <ClCompile Include="Types.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="vertexShader.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="fragmentShader.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="DrawObject2D.h" />
-    <ClInclude Include="Point2D.h" />
-    <ClInclude Include="Rectangle.h" />
-    <ClInclude Include="Square.h" />
+    <ClInclude Include="common\shader.hpp" />
+    <ClInclude Include="common\vboindexer.hpp" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ColorFragmentShader.fragmentshader" />
+    <None Include="SimpleFragmentShader.fragmentshader" />
+    <None Include="SimpleTransform.vertexshader" />
+    <None Include="SimpleVertexShader.vertexshader" />
+    <None Include="SingleColor.fragmentshader" />
+    <None Include="TransformVertexShader.vertexshader" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

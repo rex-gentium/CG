@@ -15,14 +15,14 @@ int Window::create(std::string windowName, int screenWidth, int screenHeight)
 	this->screenHeight = screenHeight;
 
 	glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // We want OpenGL 4.5
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 4.5
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //We don't want the old OpenGL 
 
 	this->glfwWindow = glfwCreateWindow(screenWidth, screenHeight, windowName.c_str(), NULL, NULL);
 	if (glfwWindow == NULL) {
-		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 4.5 compatible.\n");
+		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible.\n");
 		glfwTerminate();
 		glfwWindow = nullptr;
 		return -1;
@@ -31,9 +31,9 @@ int Window::create(std::string windowName, int screenWidth, int screenHeight)
 	glfwMakeContextCurrent(glfwWindow);
 	
 	glViewport(0, 0, screenWidth, screenHeight);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f);
+	//glMatrixMode(GL_PROJECTION);
+	//glLoadIdentity();
+	//glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f);
 
 	return 0;
 }
@@ -41,7 +41,7 @@ int Window::create(std::string windowName, int screenWidth, int screenHeight)
 void Window::swapBuffers()
 {
 	glfwSwapBuffers(glfwWindow);
-	glfwPollEvents();
+//	glfwPollEvents();
 	//updateScreenResolution();
 }
 
@@ -99,9 +99,9 @@ void Window::updateScreenResolution()
 	glfwGetFramebufferSize(glfwWindow, &screenWidth, &screenHeight);
 	if (prevWidth != screenWidth || prevHeight != screenHeight) {
 		glViewport(0, 0, screenWidth, screenHeight);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f);
+		//glMatrixMode(GL_PROJECTION);
+		//glLoadIdentity();
+		//glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f);
 	}
 }
 

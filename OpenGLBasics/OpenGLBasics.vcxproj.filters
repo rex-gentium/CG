@@ -18,14 +18,47 @@
     <ClCompile Include="Source.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
+    <ClCompile Include="Types.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+    <ClCompile Include="common\shader.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="vertexShader.glsl">
+    <ClInclude Include="Types.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="common\shader.hpp">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="common\vboindexer.hpp">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SimpleFragmentShader.fragmentshader">
       <Filter>Файлы ресурсов</Filter>
-    </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="fragmentShader.glsl">
+    </None>
+    <None Include="SimpleVertexShader.vertexshader">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="SimpleTransform.vertexshader">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="SingleColor.fragmentshader">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="ColorFragmentShader.fragmentshader">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="TransformVertexShader.vertexshader">
       <Filter>Файлы ресурсов</Filter>
     </None>
   </ItemGroup>
