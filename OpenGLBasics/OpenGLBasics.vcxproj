@@ -161,14 +161,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="common\shader.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="Types.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="common\shader.hpp" />
     <ClInclude Include="common\vboindexer.hpp" />
+    <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
