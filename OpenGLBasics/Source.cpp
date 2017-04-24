@@ -7,7 +7,6 @@
 using namespace glm;
 
 #include "Window.h"
-#include "Camera.h"
 #include "common\shader.hpp"
 #include "TextureLoader.h"
 
@@ -88,11 +87,11 @@ static const GLfloat g_uv_buffer_data[] = {
 	1.0f, 1.0f,
 	1.0f, 0.0f,
 	0.0f, 0.0f,
-	0.0f, 1.0f,
-	1.0f, 1.0f,
+	0.0f, 4.0f,
+	4.0f, 4.0f,
 	0.0f, 0.0f,
-	1.0f, 1.0f,
-	1.0f, 0.0f
+	4.0f, 4.0f,
+	4.0f, 0.0f
 };
 
 static const GLfloat g_uv_buffer_data_repeat[] = {
@@ -195,7 +194,7 @@ int main() {
 	GLuint uvBuffer;
 	glGenBuffers(1, &uvBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data_repeat), g_uv_buffer_data_repeat, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
 	
 	do {
 		// draw code
