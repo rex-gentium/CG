@@ -314,7 +314,7 @@ void computeMatricesFromInputs(Window * window)
 
 GLfloat * segmentOctahedron(GLfloat * octahedron, int &vertexCount, int precision)
 {
-	GLfloat * result = new GLfloat[3 * vertexCount * 4];
+	GLfloat * result = new GLfloat[3 * vertexCount * 4]
 	for (int f = 0; f < vertexCount / 9; ++f) {
 		glm::vec3 v1(octahedron[9 * f], octahedron[9 * f + 1], octahedron[9 * f + 2]);
 		glm::vec3 v2(octahedron[9 * f + 3], octahedron[9 * f + 4], octahedron[9 * f + 5]);
