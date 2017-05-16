@@ -9,89 +9,62 @@ using namespace glm;
 #include "Window.h"
 #include "common\shader.hpp"
 #include "TextureLoader.h"
+#include <vector>
 
-static const GLfloat g_vertex_buffer_data[] = {
-	// низ: z = -1
-	-1.0f, -1.0f, -1.0f,
-	-1.0f, 1.0f, -1.0f,
-	1.0f, 1.0f, -1.0f,
-	-1.0f, -1.0f, -1.0f,
-	1.0f, 1.0f, -1.0f,
-	1.0f, -1.0f,-1.0f,
-	// верх: z = 1
-	-1.0f, 1.0f, 1.0f,
-	-1.0f, -1.0f, 1.0f,
-	1.0f, -1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f, -1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	// тыл: y = -1
-	1.0f, -1.0f, -1.0f,
-	1.0f, -1.0f, 1.0f,
-	-1.0f, -1.0f, 1.0f,
-	1.0f, -1.0f, -1.0f,
-	-1.0f, -1.0f, 1.0f,
-	-1.0f, -1.0f, -1.0f,
-	// фронт: y = 1
-	-1.0f, 1.0f, -1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f, -1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, -1.0f,
-	// левый бок: х = -1
-	-1.0f, -1.0f, -1.0f,
-	-1.0f, -1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f, -1.0f, -1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f, -1.0f,
-	// правый бок: x = 1
-	1.0f, 1.0f, -1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, -1.0f, 1.0f,
-	1.0f, 1.0f, -1.0f,
-	1.0f, -1.0f, 1.0f,
-	1.0f, -1.0f, -1.0f
+GLfloat g_vertex_buffer_data[] = {
+	// верхние грани
+	-1.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 1.0f,
+	1.0f, 1.0f, 0.0f,
+	1.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 1.0f,
+	1.0f, -1.0f, 0.0f,
+	1.0f, -1.0f, 0.0f,
+	0.0f, 0.0f, 1.0f,
+	-1.0f, -1.0f, 0.0f,
+	-1.0f, -1.0f, 0.0f,
+	0.0f, 0.0f, 1.0f,
+	-1.0f, 1.0f, 0.0f,
+	// нижние грани
+	-1.0f, 1.0f, 0.0f,
+	1.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, -1.0f,
+	1.0f, 1.0f, 0.0f,
+	1.0f, -1.0f, 0.0f,
+	0.0f, 0.0f, -1.0f,
+	1.0f, -1.0f, 0.0f,
+	-1.0f, -1.0f, 0.0f,
+	0.0f, 0.0f, -1.0f,
+	-1.0f, -1.0f, 0.0f,
+	-1.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, -1.0f
 };
 
 static const GLfloat g_uv_buffer_data[] = {
 	0.0f, 0.0f,
-	0.0f, 1.0f,
-	1.0f, 1.0f,
-	0.0f, 0.0f,
-	1.0f, 1.0f,
+	0.5f, 1.0f,
 	1.0f, 0.0f,
 	0.0f, 0.0f,
-	0.0f, 1.0f,
-	1.0f, 1.0f,
-	0.0f, 0.0f,
-	1.0f, 1.0f,
+	0.5f, 1.0f,
 	1.0f, 0.0f,
 	0.0f, 0.0f,
-	0.0f, 1.0f,
-	1.0f, 1.0f,
-	0.0f, 0.0f,
-	1.0f, 1.0f,
+	0.5f, 1.0f,
 	1.0f, 0.0f,
 	0.0f, 0.0f,
-	0.0f, 1.0f,
-	1.0f, 1.0f,
-	0.0f, 0.0f,
-	1.0f, 1.0f,
+	0.5f, 1.0f,
 	1.0f, 0.0f,
 	0.0f, 0.0f,
-	0.0f, 1.0f,
-	1.0f, 1.0f,
-	0.0f, 0.0f,
-	1.0f, 1.0f,
+	0.5f, 1.0f,
 	1.0f, 0.0f,
 	0.0f, 0.0f,
-	0.0f, 4.0f,
-	4.0f, 4.0f,
+	0.5f, 1.0f,
+	1.0f, 0.0f,
 	0.0f, 0.0f,
-	4.0f, 4.0f,
-	4.0f, 0.0f
+	0.5f, 1.0f,
+	1.0f, 0.0f,
+	0.0f, 0.0f,
+	0.5f, 1.0f,
+	1.0f, 0.0f
 };
 
 static const GLfloat g_uv_buffer_data_repeat[] = {
@@ -140,6 +113,7 @@ void handleKeyInput(GLFWwindow* window, int key, int scancode, int action, int m
 void handleMouseMovement(GLFWwindow* window, double xpos, double ypos);
 void handleMouseInput(GLFWwindow* window, int button, int action, int mods);
 void computeMatricesFromInputs(Window * window);
+GLfloat * segmentOctahedron(GLfloat * octahedron, int &vertexCount, int precision);
 
 GLuint vertexArrayObject;
 
@@ -156,6 +130,9 @@ float horizontalAngle = 3.14f * 1.25f;
 float verticalAngle = - 3.14f * 0.25f;
 
 int main() {
+	int sphereVertexCount = 3*8*3;
+	GLfloat * sphere = segmentOctahedron(g_vertex_buffer_data, sphereVertexCount, 2);
+
 	isCameraMovingLeft = isCameraMovingRight = isCameraMovingForward = isCameraMovingBackward = false;
 	// init Window Object and input handlers
 	initGLFW();
@@ -215,7 +192,7 @@ int main() {
 		glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3*12);
+		glDrawArrays(GL_TRIANGLES, 0, 3*8);
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 
@@ -333,4 +310,31 @@ void computeMatricesFromInputs(Window * window)
 
 	projection = glm::perspective(45.0f, window->getScreenRatio(), 0.1f, 100.0f);
 	view = glm::lookAt(position, position + direction, up);
+}
+
+GLfloat * segmentOctahedron(GLfloat * octahedron, int &vertexCount, int precision)
+{
+	GLfloat * result = new GLfloat[3 * vertexCount * 4];
+	for (int f = 0; f < vertexCount / 9; ++f) {
+		glm::vec3 v1(octahedron[9 * f], octahedron[9 * f + 1], octahedron[9 * f + 2]);
+		glm::vec3 v2(octahedron[9 * f + 3], octahedron[9 * f + 4], octahedron[9 * f + 5]);
+		glm::vec3 v3(octahedron[9 * f + 6], octahedron[9 * f + 7], octahedron[9 * f + 8]);
+		glm::vec3 a = (v1 + v2) * 0.5f;
+		glm::vec3 b = (v2 + v3) * 0.5f;
+		glm::vec3 c = (v1 + v3) * 0.5f;
+		result[9 * 4 * f + 0] = v1.x; result[9 * 4 * f + 1] = v1.y; result[9 * 4 * f + 2] = v1.z;
+		result[9 * 4 * f + 3] = a.x; result[9 * 4 * f + 4] = a.y; result[9 * 4 * f + 5] = a.z;
+		result[9 * 4 * f + 6] = c.x; result[9 * 4 * f + 7] = c.y; result[9 * 4 * f + 8] = c.z;
+		result[9 * 4 * f + 9] = a.x; result[9 * 4 * f + 10] = a.y; result[9 * 4 * f + 11] = a.z;
+		result[9 * 4 * f + 12] = v2.x; result[9 * 4 * f + 13] = v2.y; result[9 * 4 * f + 14] = v2.z;
+		result[9 * 4 * f + 15] = b.x; result[9 * 4 * f + 16] = b.y; result[9 * 4 * f + 17] = b.z;
+		result[9 * 4 * f + 18] = a.x; result[9 * 4 * f + 19] = a.y; result[9 * 4 * f + 20] = a.z;
+		result[9 * 4 * f + 21] = b.x; result[9 * 4 * f + 22] = b.y; result[9 * 4 * f + 23] = b.z;
+		result[9 * 4 * f + 24] = c.x; result[9 * 4 * f + 25] = c.y; result[9 * 4 * f + 26] = c.z;
+		result[9 * 4 * f + 27] = c.x; result[9 * 4 * f + 28] = c.y; result[9 * 4 * f + 29] = c.z;
+		result[9 * 4 * f + 30] = b.x; result[9 * 4 * f + 31] = b.y; result[9 * 4 * f + 32] = b.z;
+		result[9 * 4 * f + 33] = v3.x; result[9 * 4 * f + 34] = v3.y; result[9 * 4 * f + 35] = v3.z;
+	}
+	vertexCount = 3 * 4 * vertexCount;
+	return result;
 }
