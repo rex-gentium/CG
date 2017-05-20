@@ -20,6 +20,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Shape3D.h"
+#include "Light.h"
 
 // Properties
 const GLuint WIDTH = 1024, HEIGHT = 768;
@@ -35,9 +36,6 @@ Camera  camera(glm::vec3(0.0f, 0.0f, 3.0f));
 GLfloat lastX = WIDTH / 2.0;
 GLfloat lastY = HEIGHT / 2.0;
 bool keys[1024];
-
-// Light attributes
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
@@ -81,25 +79,26 @@ int main()
 	Shader lightingShader("LightingShader.vs", "LightingShader.fs");
 	Shader lampShader("LightingShader.vs", "FragmentShader.fs");
 
+	// Light & material properties
+	Light lightSource = Light::DEFAULT;
+	lightSource.position = { 1.2f, 1.0f, 2.0f };
+
 	// Set up vertex data (and buffer(s)) and attribute pointers
-	/*Point a(-0.5f, -0.5f, -0.5f), a1(-0.5f, -0.5f, 0.5f),
-		b(-0.5f, 0.5f, -0.5f), b1(-0.5f, 0.5f, 0.5f),
-		c(0.5f, 0.5f, -0.5f), c1(0.5f, 0.5f, 0.5f),
-		d(0.5f, -0.5f, -0.5f), d1(0.5f, -0.5f, 0.5f);*/
 	Point a(0.0f, 0.5f, 0.0f), 
 		b(0.5f, 0.0f, 0.0f), 
 		c(0.0f, -0.5f, 0.0f), 
 		d(-0.5f, 0.0f, 0.0f), 
 		e(0.0f, 0.0f, 0.5f), 
 		f(0.0f, 0.0f, -0.5f);
-	Shape * octahedron = new Shape({Triangle(a, e, b),
+	Shape * octahedron = new Shape({
+		Triangle(a, e, b),
 		Triangle(b, e, c),
 		Triangle(c, e, d),
 		Triangle(d, e, a),
 		Triangle(a, b, f),
 		Triangle(b, c, f),
 		Triangle(c, d, f),
-		Triangle(d, a, f)});
+		Triangle(d, a, f)}, Material::EMERALD);
 	Shape * sphere = octahedron->segment(7);
 	sphere->normalize({ 0.0f, 0.0f, 0.0f }, 0.5f);
 	int vertexBufferDataSize;
@@ -151,14 +150,20 @@ int main()
 
 		// Use cooresponding shader when setting uniforms/drawing objects
 		lightingShader.use();
-		GLint objectColorLoc = glGetUniformLocation(lightingShader.program, "objectColor");
-		GLint lightColorLoc = glGetUniformLocation(lightingShader.program, "lightColor");
-		GLint lightPosLoc = glGetUniformLocation(lightingShader.program, "lightPos");
+		GLint lightPosLoc = glGetUniformLocation(lightingShader.program, "light.position");
 		GLint viewPosLoc = glGetUniformLocation(lightingShader.program, "viewPos");
+		glUniform3f(lightPosLoc, lightSource.position.x, lightSource.position.y, lightSource.position.z);
 		glUniform3f(viewPosLoc, camera.Position.x, camera.Position.y, camera.Position.z);
-		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
-		glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
-		glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
+		// Set lights properties
+		glUniform3f(glGetUniformLocation(lightingShader.program, "light.ambient"), lightSource.ambient.x, lightSource.ambient.y, lightSource.ambient.z);
+		glUniform3f(glGetUniformLocation(lightingShader.program, "light.diffuse"), lightSource.diffuse.x, lightSource.diffuse.y, lightSource.diffuse.z);
+		glUniform3f(glGetUniformLocation(lightingShader.program, "light.specular"), lightSource.specular.x, lightSource.specular.y, lightSource.specular.z);
+		// Set material properties
+		Material material = sphere->getMaterial();
+		glUniform3f(glGetUniformLocation(lightingShader.program, "material.ambient"), material.ambient.x, material.ambient.y, material.ambient.z);
+		glUniform3f(glGetUniformLocation(lightingShader.program, "material.diffuse"), material.diffuse.x, material.diffuse.y, material.diffuse.z);
+		glUniform3f(glGetUniformLocation(lightingShader.program, "material.specular"), material.specular.x, material.diffuse.y, material.diffuse.z);
+		glUniform1f(glGetUniformLocation(lightingShader.program, "material.shininess"), material.shininess);
 
 		// Create camera transformations
 		glm::mat4 view;
@@ -189,7 +194,7 @@ int main()
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 		model = glm::mat4();
-		model = glm::translate(model, lightPos);
+		model = glm::translate(model, lightSource.position);
 		model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		// Draw the light object (using light's vertex attributes)

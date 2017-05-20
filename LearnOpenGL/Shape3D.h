@@ -2,6 +2,7 @@
 #include <vector>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include "Material.h"
 
 typedef glm::vec3 Point;
 
@@ -32,8 +33,9 @@ struct Triangle {
 
 class Shape {
 	std::vector<Triangle> polygons;
+	Material material;
 public:
-	Shape(std::vector<Triangle> polygons) : polygons(polygons) {}
+	Shape(std::vector<Triangle> polygons, Material material = Material::DEFAULT) : polygons(polygons), material(material) {}
 
 	GLfloat * getVertexBufferData(int& vertexBufferSize) const {
 		vertexBufferSize = polygons.size() * 3 * (3 + 3); // 3 points, 3 coordinates + 3 normal coordinates
@@ -59,7 +61,7 @@ public:
 			segmentedPolygons[4 * i + 2] = segments[2];
 			segmentedPolygons[4 * i + 3] = segments[3];
 		}
-		Shape * result = new Shape(segmentedPolygons);
+		Shape * result = new Shape(segmentedPolygons, material);
 		if (--precision > 0) {
 			Shape * temp = result;
 			result = temp->segment(precision);
@@ -86,5 +88,7 @@ public:
 			}
 		return result;
 	}
-};
 
+	void setMaterial(Material m) { material = m; }
+	Material getMaterial() const { return material; }
+};
