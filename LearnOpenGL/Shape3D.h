@@ -52,7 +52,7 @@ public:
 	}
 
 	Shape * segment(int precision = 1) const {
-		if (precision <= 0) return new Shape(this->polygons);
+		if (precision <= 0) return new Shape(this->polygons, this->material);
 		std::vector<Triangle> segmentedPolygons(polygons.size() * 4);
 		for (int i = 0; i < polygons.size(); ++i) {
 			auto segments = polygons[i].segment();

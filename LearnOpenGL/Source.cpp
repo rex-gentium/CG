@@ -79,7 +79,7 @@ int main()
 	Shader lightingShader("LightingShader.vs", "LightingShader.fs");
 	Shader lampShader("LightingShader.vs", "FragmentShader.fs");
 
-	// Light & material properties
+	// Light properties
 	Light lightSource = Light::DEFAULT;
 	lightSource.position = { 1.2f, 1.0f, 2.0f };
 
@@ -150,10 +150,12 @@ int main()
 
 		// Use cooresponding shader when setting uniforms/drawing objects
 		lightingShader.use();
+		
 		GLint lightPosLoc = glGetUniformLocation(lightingShader.program, "light.position");
 		GLint viewPosLoc = glGetUniformLocation(lightingShader.program, "viewPos");
 		glUniform3f(lightPosLoc, lightSource.position.x, lightSource.position.y, lightSource.position.z);
-		glUniform3f(viewPosLoc, camera.Position.x, camera.Position.y, camera.Position.z);
+		glUniform3f(viewPosLoc, camera.position.x, camera.position.y, camera.position.z);
+		
 		// Set lights properties
 		glUniform3f(glGetUniformLocation(lightingShader.program, "light.ambient"), lightSource.ambient.x, lightSource.ambient.y, lightSource.ambient.z);
 		glUniform3f(glGetUniformLocation(lightingShader.program, "light.diffuse"), lightSource.diffuse.x, lightSource.diffuse.y, lightSource.diffuse.z);
@@ -164,11 +166,23 @@ int main()
 		glUniform3f(glGetUniformLocation(lightingShader.program, "material.diffuse"), material.diffuse.x, material.diffuse.y, material.diffuse.z);
 		glUniform3f(glGetUniformLocation(lightingShader.program, "material.specular"), material.specular.x, material.diffuse.y, material.diffuse.z);
 		glUniform1f(glGetUniformLocation(lightingShader.program, "material.shininess"), material.shininess);
+		/* SPOTLIGHT ADDING */
+		GLint lightSpotdirLoc = glGetUniformLocation(lightingShader.program, "light.direction");
+		GLint lightSpotCutOffLoc = glGetUniformLocation(lightingShader.program, "light.cutOff");
+		GLint lightSpotOuterCutOffLoc = glGetUniformLocation(lightingShader.program, "light.outerCutOff");
+		// Set lights properties
+		/*glUniform3f(lightSpotdirLoc, -lightSource.position.x, -lightSource.position.y, -lightSource.position.z);
+		Material m = Material::EMERALD; m.ambient *= 2.0f; sphere->setMaterial(m);
+		glUniform1f(lightSpotCutOffLoc, glm::cos(glm::radians(6.0f)));
+		glUniform1f(lightSpotOuterCutOffLoc, glm::cos(glm::radians(7.4f)));
+		glUniform1f(glGetUniformLocation(lightingShader.program, "light.constant"), 1.0f);
+		glUniform1f(glGetUniformLocation(lightingShader.program, "light.linear"), 0.09f);
+		glUniform1f(glGetUniformLocation(lightingShader.program, "light.quadratic"), 0.032f);*/
 
 		// Create camera transformations
 		glm::mat4 view;
 		view = camera.getViewMatrix();
-		glm::mat4 projection = glm::perspective(camera.Zoom, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(camera.zoom, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 		// Get the uniform locations
 		GLint modelLoc = glGetUniformLocation(lightingShader.program, "model");
 		GLint viewLoc = glGetUniformLocation(lightingShader.program, "view");
