@@ -41,7 +41,7 @@ bool keys[1024];
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
 
-// The MAIN function, from here we start the application and run the game loop
+
 int main()
 {
 	// Init GLFW
