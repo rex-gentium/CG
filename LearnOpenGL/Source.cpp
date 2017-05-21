@@ -32,7 +32,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void processMovement();
 
 // Camera
-Camera  camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(2.37282f, 1.06039f, 0.775822f));
 GLfloat lastX = WIDTH / 2.0;
 GLfloat lastY = HEIGHT / 2.0;
 bool keys[1024];
@@ -51,10 +51,10 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_SAMPLES, 16);
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL Project", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	// Set the required callback functions
@@ -76,8 +76,9 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	// Build and compile our shader program
-	Shader lightingShader("LightingShader.vs", "LightingShader.fs");
-	Shader lampShader("LightingShader.vs", "FragmentShader.fs");
+	Shader lightingShader("GouraudVertexShader.vs", "GouraudFragmentShader.fs");
+	//Shader lightingShader("PhongVertexShader.vs", "PhongFragmentShader.fs");
+	Shader lampShader("PhongVertexShader.vs", "FragmentShader.fs");
 
 	// Light properties
 	Light lightSource = Light::DEFAULT;
@@ -90,7 +91,7 @@ int main()
 		d(-0.5f, 0.0f, 0.0f), 
 		e(0.0f, 0.0f, 0.5f), 
 		f(0.0f, 0.0f, -0.5f);
-	Shape * octahedron = new Shape({
+Shape * octahedron = new Shape({
 		Triangle(a, e, b),
 		Triangle(b, e, c),
 		Triangle(c, e, d),
@@ -99,8 +100,8 @@ int main()
 		Triangle(b, c, f),
 		Triangle(c, d, f),
 		Triangle(d, a, f)}, Material::EMERALD);
-	Shape * sphere = octahedron->segment(7);
-	sphere->normalize({ 0.0f, 0.0f, 0.0f }, 0.5f);
+	Shape * sphere = octahedron->segment(0);
+	sphere->normalize({ 0.0f, 0.0f, 0.0f }, 1.0f);
 	int vertexBufferDataSize;
 	GLfloat * verticesBufferData = sphere->getVertexBufferData(vertexBufferDataSize);
 	GLuint VBO, containerVAO;
@@ -149,35 +150,21 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Use cooresponding shader when setting uniforms/drawing objects
-		lightingShader.use();
-		
-		GLint lightPosLoc = glGetUniformLocation(lightingShader.program, "light.position");
+		lightingShader.use();		
+		GLint lightPosLoc = glGetUniformLocation(lightingShader.program, "lightPos");
 		GLint viewPosLoc = glGetUniformLocation(lightingShader.program, "viewPos");
+		GLint lightColorLoc = glGetUniformLocation(lightingShader.program, "lightColor");
+		GLint objColorLoc = glGetUniformLocation(lightingShader.program, "objectColor");
+		GLint lightAmbientStrengthLoc = glGetUniformLocation(lightingShader.program, "ambientStrength");
+		GLint lightDiffuseStrengthLoc = glGetUniformLocation(lightingShader.program, "diffuseStrength");
+		GLint lightSpecularStrengthLoc = glGetUniformLocation(lightingShader.program, "specularStrength");
 		glUniform3f(lightPosLoc, lightSource.position.x, lightSource.position.y, lightSource.position.z);
 		glUniform3f(viewPosLoc, camera.position.x, camera.position.y, camera.position.z);
-		
-		// Set lights properties
-		glUniform3f(glGetUniformLocation(lightingShader.program, "light.ambient"), lightSource.ambient.x, lightSource.ambient.y, lightSource.ambient.z);
-		glUniform3f(glGetUniformLocation(lightingShader.program, "light.diffuse"), lightSource.diffuse.x, lightSource.diffuse.y, lightSource.diffuse.z);
-		glUniform3f(glGetUniformLocation(lightingShader.program, "light.specular"), lightSource.specular.x, lightSource.specular.y, lightSource.specular.z);
-		// Set material properties
-		Material material = sphere->getMaterial();
-		glUniform3f(glGetUniformLocation(lightingShader.program, "material.ambient"), material.ambient.x, material.ambient.y, material.ambient.z);
-		glUniform3f(glGetUniformLocation(lightingShader.program, "material.diffuse"), material.diffuse.x, material.diffuse.y, material.diffuse.z);
-		glUniform3f(glGetUniformLocation(lightingShader.program, "material.specular"), material.specular.x, material.diffuse.y, material.diffuse.z);
-		glUniform1f(glGetUniformLocation(lightingShader.program, "material.shininess"), material.shininess);
-		/* SPOTLIGHT ADDING */
-		GLint lightSpotdirLoc = glGetUniformLocation(lightingShader.program, "light.direction");
-		GLint lightSpotCutOffLoc = glGetUniformLocation(lightingShader.program, "light.cutOff");
-		GLint lightSpotOuterCutOffLoc = glGetUniformLocation(lightingShader.program, "light.outerCutOff");
-		// Set lights properties
-		/*glUniform3f(lightSpotdirLoc, -lightSource.position.x, -lightSource.position.y, -lightSource.position.z);
-		Material m = Material::EMERALD; m.ambient *= 2.0f; sphere->setMaterial(m);
-		glUniform1f(lightSpotCutOffLoc, glm::cos(glm::radians(6.0f)));
-		glUniform1f(lightSpotOuterCutOffLoc, glm::cos(glm::radians(7.4f)));
-		glUniform1f(glGetUniformLocation(lightingShader.program, "light.constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.program, "light.linear"), 0.09f);
-		glUniform1f(glGetUniformLocation(lightingShader.program, "light.quadratic"), 0.032f);*/
+		glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
+		glUniform3f(objColorLoc, 1.0f, 0.0f, 0.0f);
+		glUniform1f(lightAmbientStrengthLoc, 0.2f);
+		glUniform1f(lightDiffuseStrengthLoc, 0.7f);
+		glUniform1f(lightSpecularStrengthLoc, 1.0f);
 
 		// Create camera transformations
 		glm::mat4 view;
@@ -250,6 +237,7 @@ void processMovement()
 		camera.processKeyboard(LEFT, deltaTime);
 	if (keys[GLFW_KEY_D])
 		camera.processKeyboard(RIGHT, deltaTime);
+	std::cout << "(" << camera.position.x << " " << camera.position.y << " " << camera.position.z << ")" << std::endl;
 }
 
 bool firstMouse = true;
