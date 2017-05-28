@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <map>
 
 // GLEW
 #define GLEW_STATIC
@@ -74,15 +75,17 @@ int main()
 
 	// Setup OpenGL options
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Build and compile our shader program
-	Shader lightingShader("GouraudVertexShader.vs", "GouraudFragmentShader.fs");
-	//Shader lightingShader("PhongVertexShader.vs", "PhongFragmentShader.fs");
-	Shader lampShader("PhongVertexShader.vs", "FragmentShader.fs");
+	//Shader lightingShader("GouraudVertexShader.vs", "GouraudFragmentShader.fs");
+	Shader lightingShader("PhongVertexShader.vs", "PhongFragmentShader.fs");
+	Shader lampShader("PhongVertexShader.vs", "WhiteFragmentShader.fs");
 
 	// Light properties
 	Light lightSource = Light::DEFAULT;
-	lightSource.position = { 1.2f, 1.0f, 2.0f };
+	lightSource.position = { 1.2f, 1.0f, 1.5f };
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
 	Point a(0.0f, 0.5f, 0.0f), 
@@ -91,7 +94,7 @@ int main()
 		d(-0.5f, 0.0f, 0.0f), 
 		e(0.0f, 0.0f, 0.5f), 
 		f(0.0f, 0.0f, -0.5f);
-Shape * octahedron = new Shape({
+	Shape * octahedron = new Shape({
 		Triangle(a, e, b),
 		Triangle(b, e, c),
 		Triangle(c, e, d),
@@ -99,38 +102,55 @@ Shape * octahedron = new Shape({
 		Triangle(a, b, f),
 		Triangle(b, c, f),
 		Triangle(c, d, f),
-		Triangle(d, a, f)}, Material::EMERALD);
-	Shape * sphere = octahedron->segment(0);
-	sphere->normalize({ 0.0f, 0.0f, 0.0f }, 1.0f);
+		Triangle(d, a, f) }, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	Shape * sphere = octahedron->segment(7);
+	sphere->normalize({ 0.0f, 0.0f, 0.0f }, 0.5f);
 	int vertexBufferDataSize;
-	GLfloat * verticesBufferData = sphere->getVertexBufferData(vertexBufferDataSize);
-	GLuint VBO, containerVAO;
-	glGenVertexArrays(1, &containerVAO);
-	glGenBuffers(1, &VBO);
+	GLfloat * verticesBufferData = sphere->getVertexNormalBufferData(vertexBufferDataSize);
 
-	glBindVertexArray(containerVAO);
+	Shape * glass = new Shape({
+		Triangle({ 0.0f, -0.5f, -0.5f },{ 0.0f, 0.5f, -0.5f },{ 0.0f, 0.5f, 0.5f }),
+		Triangle({ 0.0f, -0.5f, -0.5f },{ 0.0f, 0.5f, 0.5f },{ 0.0f, -0.5f, 0.5f })
+	});
+	int glassVertexBufferDataSize;
+	GLfloat * glassVerticesBufferData = glass->getVertexNormalBufferData(glassVertexBufferDataSize);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	std::vector<Shape*> glasses;
+	glasses.push_back(new Shape(glass->polygons, glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 0.5f)));
+	glasses.push_back(new Shape(glass->polygons, glm::vec3(-2.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 0.5f)));
+	glasses.push_back(new Shape(glass->polygons, glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)));
+
+	// Sphere VAO
+	GLuint sphereVAO, sphereVBO;
+	glGenVertexArrays(1, &sphereVAO);
+	glGenBuffers(1, &sphereVBO);
+	glBindVertexArray(sphereVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertexBufferDataSize, verticesBufferData, GL_STATIC_DRAW);
-
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
-	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0); //position
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat))); // normal
 	glBindVertexArray(0);
-
-	// Then, we set the light's VAO (VBO stays the same. After all, the vertices are the same for the light object (also a 3D cube))
+	// Lamp VAO
 	GLuint lightVAO;
 	glGenVertexArrays(1, &lightVAO);
 	glBindVertexArray(lightVAO);
-
-	// We only need to bind to the VBO (to link it with glVertexAttribPointer), no need to fill it; the VBO's data already contains all we need.
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// Set the vertex attributes (only position data for the lamp))
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0); // position
 	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+	// Glass VAO
+	GLuint glassVAO, glassVBO;
+	glGenVertexArrays(1, &glassVAO);
+	glGenBuffers(1, &glassVBO);
+	glBindVertexArray(glassVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, glassVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * glassVertexBufferDataSize, glassVerticesBufferData, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0); //position
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat))); // normal
 	glBindVertexArray(0);
 
 	// Game loop
@@ -161,7 +181,6 @@ Shape * octahedron = new Shape({
 		glUniform3f(lightPosLoc, lightSource.position.x, lightSource.position.y, lightSource.position.z);
 		glUniform3f(viewPosLoc, camera.position.x, camera.position.y, camera.position.z);
 		glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
-		glUniform3f(objColorLoc, 1.0f, 0.0f, 0.0f);
 		glUniform1f(lightAmbientStrengthLoc, 0.2f);
 		glUniform1f(lightDiffuseStrengthLoc, 0.7f);
 		glUniform1f(lightSpecularStrengthLoc, 1.0f);
@@ -170,35 +189,35 @@ Shape * octahedron = new Shape({
 		glm::mat4 view;
 		view = camera.getViewMatrix();
 		glm::mat4 projection = glm::perspective(camera.zoom, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
-		// Get the uniform locations
-		GLint modelLoc = glGetUniformLocation(lightingShader.program, "model");
-		GLint viewLoc = glGetUniformLocation(lightingShader.program, "view");
-		GLint projLoc = glGetUniformLocation(lightingShader.program, "projection");
-		// Pass the matrices to the shader
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-		// Draw the container (using container's vertex attributes)
-		glBindVertexArray(containerVAO);
-		glm::mat4 model;
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, sphere->getVertexCount());
-		glBindVertexArray(0);
+		
+		std::map<float, Shape*> sortedGlasses;
+		for (auto & glass : glasses) {
+			GLfloat distance = glm::length(camera.position - glass->position);
+			sortedGlasses[distance] = glass;
+		}
 
-		// Also draw the lamp object, again binding the appropriate shader
+		// Draw Sphere
+		glUniform4f(objColorLoc, sphere->color.r, sphere->color.g, sphere->color.b, sphere->color.a);
+		sphere->draw(sphereVAO, lightingShader, view, projection);
+		// Draw Glasses
+		for (auto it = sortedGlasses.rbegin(); it != sortedGlasses.rend(); ++it)
+		{
+			Shape * glass = it->second;
+			glUniform4f(objColorLoc, glass->color.r, glass->color.g, glass->color.b, glass->color.a);
+			glass->draw(glassVAO, lightingShader, view, projection);
+		}
+
+		// Draw Lamp
 		lampShader.use();
-		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
-		modelLoc = glGetUniformLocation(lampShader.program, "model");
-		viewLoc = glGetUniformLocation(lampShader.program, "view");
-		projLoc = glGetUniformLocation(lampShader.program, "projection");
-		// Set matrices
+		GLint modelLoc = glGetUniformLocation(lampShader.program, "model");
+		GLint viewLoc = glGetUniformLocation(lampShader.program, "view");
+		GLint projLoc = glGetUniformLocation(lampShader.program, "projection");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		model = glm::mat4();
-		model = glm::translate(model, lightSource.position);
+		glm::mat4 model = glm::translate(glm::mat4(), lightSource.position);
 		model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		// Draw the light object (using light's vertex attributes)
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, sphere->getVertexCount());
 		glBindVertexArray(0);

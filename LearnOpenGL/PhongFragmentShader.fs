@@ -7,7 +7,7 @@ in vec3 Normal;
 uniform vec3 lightPos; 
 uniform vec3 viewPos;
 uniform vec3 lightColor;
-uniform vec3 objectColor;
+uniform vec4 objectColor;
 
 uniform float ambientStrength;
 uniform float diffuseStrength;
@@ -26,8 +26,7 @@ void main()
 	float diffuse = phongDiffuse(diffuseStrength, norm, lightDir);
   	float specular = phongSpecular(specularStrength, normalize(viewPos - FragPos), reflect(-lightDir, norm), 32.0f);
     
-    vec3 result = (ambient + diffuse + specular) * lightColor * objectColor;
-    color = vec4(result, 1.0f);
+    color = vec4((ambient + diffuse + specular) * lightColor, 1.0f) * objectColor;
 }
 
 float phongAmbient(float strength) {
