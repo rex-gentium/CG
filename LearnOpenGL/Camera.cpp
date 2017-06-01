@@ -38,11 +38,8 @@ void Camera::processKeyboard(Camera_Movement direction, GLfloat deltaTime)
 
 void Camera::processMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean constrainPitch)
 {
-	xoffset *= this->mouseSensitivity;
-	yoffset *= this->mouseSensitivity;
-
-	this->yaw += xoffset;
-	this->pitch += yoffset;
+	this->yaw += xoffset * mouseSensitivity;
+	this->pitch += yoffset * mouseSensitivity;
 
 	// Make sure that when pitch is out of bounds, screen doesn't get flipped
 	if (constrainPitch)
@@ -55,16 +52,6 @@ void Camera::processMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean co
 
 	// Update Front, Right and Up Vectors using the updated Eular angles
 	this->updateCameraVectors();
-}
-
-void Camera::processMouseScroll(GLfloat yoffset)
-{
-	if (this->zoom >= 1.0f && this->zoom <= 45.0f)
-		this->zoom -= yoffset;
-	if (this->zoom <= 1.0f)
-		this->zoom = 1.0f;
-	if (this->zoom >= 45.0f)
-		this->zoom = 45.0f;
 }
 
 void Camera::updateCameraVectors()

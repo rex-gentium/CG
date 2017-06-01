@@ -28,7 +28,6 @@ const GLuint WIDTH = 1024, HEIGHT = 768;
 
 // Function prototypes
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void processMovement();
 
@@ -61,7 +60,6 @@ int main()
 	// Set the required callback functions
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
 
 	// Options
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -259,27 +257,13 @@ void processMovement()
 	std::cout << "(" << camera.position.x << " " << camera.position.y << " " << camera.position.z << ")" << std::endl;
 }
 
-bool firstMouse = true;
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	if (firstMouse)
-	{
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
-	}
-
+	static double lastX = xpos, lastY = ypos;
 	GLfloat xoffset = xpos - lastX;
 	GLfloat yoffset = lastY - ypos;  // Reversed since y-coordinates go from bottom to left
-
 	lastX = xpos;
 	lastY = ypos;
-
 	camera.processMouseMovement(xoffset, yoffset);
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-	camera.processMouseScroll(yoffset);
 }
 

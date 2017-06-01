@@ -58,9 +58,6 @@ public:
 	// Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
 	void processMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean constrainPitch = true);
 
-	// Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-	void processMouseScroll(GLfloat yoffset);
-
 private:
 	// Calculates the front vector from the Camera's (updated) Eular Angles
 	void updateCameraVectors();
